@@ -10,6 +10,7 @@
 const int N = 1000; //Numero de agentes
 const int M = 1000; //Dinero total
 const int P = 10E5; //Numero de transacciones, pasos de tiempo
+const int S = 10E4; //Numero de simulaciones
 const double Mprom = double(M)/N; //Dinero promedio por agente
 const int m = 20; //Estados calculo entropia
 
@@ -17,6 +18,7 @@ const int m = 20; //Estados calculo entropia
 std::vector<double> V (N, Mprom); //dinero*agente inicializado con Mprom
 std::vector<double> F (m, 0); //Frecuencias
 std::vector<double> H (P, 0); //vector entropia
+std::vector<double> Vprom (N, 0); //dinero*agente varias simulaciones
 
 //Archivos de Datos, ¡Cambiar nombres para cada simulacion!
 //Los archivos se reescriben si no se cambia
@@ -45,21 +47,32 @@ int main(){
   //Distribución numero real para delta en el intercambio
   std::uniform_real_distribution<> disr(0, 1);
 
-  //Simulacion
-  for(int ii = 0; ii < P; ++ii){
-    Intercambio(V, disi(gen1), disi(gen2), disr(gen3));
+  //Varias simulaciones
+  for(int jj = 0; jj < S; ++jj ){
+    //Simulacion
+    //std::vector<double> V (N, Mprom); //dinero*agente inicializado con Mprom
+    for(int ii = 0; ii < P; ++ii){
+      Intercambio(V, disi(gen1), disi(gen2), disr(gen3));
+    }
+    std::sort(V.begin(), V.end()); //Organización descendente
+    for(int kk = 0; kk < N; ++kk){
+      Vprom[kk] += V[kk];
+      V[kk] = Mprom;
+    }
   }
 
-  //Generar el archivo con los datos distribución
-  for(int ii = 0; ii < N; ++ii) DatosD << V[ii] << "\n";
-  //Generar datos de la entropia con pasos de tiempo
-  for(int ii =0; ii < P; ++ii) DatosH << ii << "\t" << H[ii] << "\n";
+  for(int ii = 0; ii < N; ++ii) Vprom[ii] = Vprom[ii]/S;
+  
 
+  //Generar el archivo con los datos distribución
+  for(int ii = 0; ii < N; ++ii) DatosD << Vprom[ii] << "\n";
+
+  //Ver variables en la consola
   double Dt = 0;
-  for (int i = 0; i < N; ++i) Dt += V[i];
+  for (int i = 0; i < N; ++i) Dt += Vprom[i];
   std::cout << "DineroT: " << Dt << "\n";
-  std::cout << "Entropia: " << Entropia(V, F, N, m) << "\n";
-  std::cout << "Gini: " << Gini(V) << "\n";
+  std::cout << "Entropia: " << Entropia(Vprom, F, N, m) << "\n";
+  std::cout << "Gini: " << Gini(Vprom) << "\n";
 
 
   return 0;
