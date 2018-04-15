@@ -9,11 +9,11 @@
 //Constantes
 const int N = 1000; //Numero de agentes
 const int M = 1000; //Dinero total
-const int P = 10E5; //Numero de transacciones, pasos de tiempo
-const int S = 10E0; //Numero de simulaciones
+const int P = pow(10, 5); //Numero de transacciones, pasos de tiempo
+const int S = pow(10, 1); //Numero de simulaciones
 const double Mprom = double(M)/N; //Dinero promedio por agente
 const int m = 20; //Estados calculo entropia
-const double lambda = 0.5; //Coeficiente Saving propency
+const double lambda = 0.3; //Coeficiente Saving propency
 
 //Vectores
 std::vector<double> V (N, Mprom); //dinero*agente inicializado con Mprom
@@ -24,6 +24,9 @@ std::vector<double> Vprom (N, 0); //dinero*agente varias simulaciones
 //Los archivos se reescriben si no se cambia
 std::string Distribution = "datosCyC.dat";
 std::ofstream DatosD(Distribution.c_str());
+
+std::string Entropy = "HCyC.dat";
+std::ofstream DatosH(Entropy.c_str());
 
 //Funciones que se usan en main
 void Intercambio (std::vector<double> & V,double lambda, int i, int j, double r);
@@ -48,11 +51,12 @@ int main(){
   double Mx = 0.0;
   for(int jj = 0; jj < S; ++jj ){
     //Simulacion
-    //std::vector<double> V (N, Mprom); //dinero*agente inicializado con Mprom
     for(int ii = 0; ii < P; ++ii){
       Intercambio(V, lambda, disi(gen1), disi(gen2), disr(gen3));
+      if(jj == 1 ) H[ii] = Entropia(V, N, m, Mx);
     }
     std::sort(V.begin(), V.end()); //Organizacion descendente
+    if(jj == 0) Mx = V[N-1] + 0.5;
     for(int kk = 0; kk < N; ++kk){
       Vprom[kk] += V[kk]; //sumar cada componente de los agentes con el mismo dinero
       V[kk] = Mprom; //volver a poner V con la condicion inicial
@@ -62,10 +66,12 @@ int main(){
   //Dividir la suma entre el numero de simulaciones hechas para encontrar
   //una distribucion promedio
   for(int ii = 0; ii < N; ++ii) Vprom[ii] = Vprom[ii]/S;
+  //for(int ii = 0; ii < N; ++ii) H[ii] = H[ii]/S;
   Mx = Vprom[N-1];
 
   //Generar el archivo con los datos distribución
   for(int ii = 0; ii < N; ++ii) DatosD << Vprom[ii] << "\n";
+  for(int ii = 0; ii < P; ++ii) DatosH << ii << "\t" << H[ii] << "\n";
 
   //Ver variables en la consola Dinero total, entropia y gini
   double Dt = 0;
@@ -135,6 +141,7 @@ double Gini (std::vector<double> Vp){
 double Entropia (std::vector<double> V, int N, int m, double Mx){
   //Vector frecuencias
   std::vector<double> F (m, 0);
+
   //delta
   double Delta = Mx/m;
 
@@ -146,7 +153,11 @@ double Entropia (std::vector<double> V, int N, int m, double Mx){
         break;
       }
     }
-  }
+  } 
+
+  for (int i = 0; i < m; ++i) std::cout << F[i] << " ";
+  std::cout << "\n";
+
 
   //Probabilidad
   for(int i = 0; i < m; ++i) F[i] = F[i]/N;
@@ -155,8 +166,10 @@ double Entropia (std::vector<double> V, int N, int m, double Mx){
   double H = 0.0;
   for (int i = 0; i < m ; ++i){
     if (F[i] != 0){
-      H += (-1)*F[i]*log(F[i]);
+      H += F[i]*log(F[i]);
     }
   }
-  return H;
+
+
+  return -H;
 }
