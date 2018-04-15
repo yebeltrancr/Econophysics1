@@ -10,7 +10,7 @@
 const int N = 1000; //Numero de agentes
 const int M = 1000; //Dinero total
 const int P = pow(10, 5); //Numero de transacciones, pasos de tiempo
-const int S = pow(10, 1); //Numero de simulaciones
+const int S = pow(10, 2); //Numero de simulaciones
 const double Mprom = double(M)/N; //Dinero promedio por agente
 const int m = 20; //Estados calculo entropia
 const double lambda = 0.3; //Coeficiente Saving propency
@@ -53,7 +53,7 @@ int main(){
     //Simulacion
     for(int ii = 0; ii < P; ++ii){
       Intercambio(V, lambda, disi(gen1), disi(gen2), disr(gen3));
-      if(jj == 1 ) H[ii] = Entropia(V, N, m, Mx);
+      if(jj != 0 ) H[ii] += Entropia(V, N, m, Mx);
     }
     std::sort(V.begin(), V.end()); //Organizacion descendente
     if(jj == 0) Mx = V[N-1] + 0.5;
@@ -66,7 +66,7 @@ int main(){
   //Dividir la suma entre el numero de simulaciones hechas para encontrar
   //una distribucion promedio
   for(int ii = 0; ii < N; ++ii) Vprom[ii] = Vprom[ii]/S;
-  //for(int ii = 0; ii < N; ++ii) H[ii] = H[ii]/S;
+  for(int ii = 0; ii < P; ++ii) H[ii] = H[ii]/(S-1.0);
   Mx = Vprom[N-1];
 
   //Generar el archivo con los datos distribución
@@ -155,8 +155,8 @@ double Entropia (std::vector<double> V, int N, int m, double Mx){
     }
   } 
 
-  for (int i = 0; i < m; ++i) std::cout << F[i] << " ";
-  std::cout << "\n";
+  //for (int i = 0; i < m; ++i) std::cout << F[i] << " ";
+  //std::cout << "\n";
 
 
   //Probabilidad
