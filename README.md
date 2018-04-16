@@ -1,1 +1,1 @@
-Simulación de algunos modelos de distribucion de riquesa y de dinero.
+Simulación de algunos modelos de distribucion de riqueza y de dinero.
